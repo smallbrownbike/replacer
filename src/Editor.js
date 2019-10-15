@@ -32,7 +32,7 @@ class Editor extends React.Component {
       } else {
         circles.push({ x: e.clientX, y: e.clientY });
       }
-
+      this.props.addPoints(points);
       this.setState({
         shapeSelected: null,
         points,

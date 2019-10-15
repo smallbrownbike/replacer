@@ -4,12 +4,18 @@ import Dropzone from "react-dropzone";
 import uploadImage from "./upload.svg";
 import editImage from "./edit.svg";
 import addImage from "./add.svg";
+import layersImage from "./layers.svg";
+import { Stage, Layer, Line } from "react-konva";
 import "./index.css";
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { image: null, editMode: false };
+    this.state = {
+      image: null,
+      editMode: false,
+      layers: null
+    };
   }
   handleDrop = file => {
     const reader = new FileReader();
@@ -32,11 +38,28 @@ class App extends React.Component {
   handleEditMode = () => {
     this.setState({ editMode: !this.state.editMode });
   };
+  addPoints = layers => {
+    function getPercentage(num, original) {
+      const decrease = (((original - 240) / original) * 100) / 100;
+
+      const percentage = num * decrease;
+      return num - percentage;
+    }
+    const newNums = layers.map((num, index) => {
+      const xAmount = getPercentage(num, window.innerWidth - 300);
+      const yAmount = getPercentage(num, window.innerHeight);
+      return index % 2 === 0 ? xAmount : yAmount;
+    });
+    console.log(layers, newNums);
+    this.setState({ layers: newNums });
+  };
+  componentDidMount() {}
   render() {
-    const { image, editMode } = this.state;
+    const { image, editMode, layers } = this.state;
     return (
       <div>
         <Editor
+          addPoints={this.addPoints}
           image={
             image && {
               width: image.width,
@@ -92,7 +115,7 @@ class App extends React.Component {
             </Dropzone>
           ) : (
             <>
-              <div
+              {/* <div
                 onClick={this.handleEditMode}
                 style={{
                   padding: 20,
@@ -110,7 +133,7 @@ class App extends React.Component {
                   src={editImage}
                 />
                 <span>Edit</span>
-              </div>
+              </div> */}
               <div
                 onClick={this.handleEditMode}
                 style={{
@@ -126,6 +149,37 @@ class App extends React.Component {
               >
                 <img style={{ maxWidth: 40, marginRight: 20 }} src={addImage} />
                 <span>Add</span>
+              </div>
+              {editMode && (
+                <div style={{ padding: 20, position: "relative" }}>
+                  {!layers ? (
+                    "Start tracing your roof"
+                  ) : (
+                    <Stage width={240} height={240}>
+                      <Layer>
+                        <Line stroke="red" points={layers.map(num => num)} />
+                      </Layer>
+                    </Stage>
+                  )}
+                </div>
+              )}
+              <div
+                style={{
+                  padding: 20,
+                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: "18px",
+                  fontWeight: "300",
+                  color: "#2d2d2d",
+                  borderBottom: "1px solid #cecece"
+                }}
+              >
+                <img
+                  style={{ maxWidth: 40, marginRight: 20 }}
+                  src={layersImage}
+                />
+                <span>Layers</span>
               </div>
             </>
           )}
