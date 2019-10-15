@@ -8,6 +8,9 @@ import roofImage from "./roof.svg";
 import { Stage, Layer, Line, Image, Circle } from "react-konva";
 import shingles1 from "./fills/shingles1.jpg";
 import shingles2 from "./fills/shingles2.jpg";
+import previews1 from "./previews/previews1.jpg";
+import previews2 from "./previews/previews2.jpg";
+import previews3 from "./previews/previews3.jpg";
 import "./index.css";
 
 class App extends React.Component {
@@ -123,18 +126,7 @@ class App extends React.Component {
   handleDrop = file => {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
-      const image = new window.Image();
-      image.src = reader.result;
-      image.onload = () => {
-        const ratio = Math.min((window.innerWidth - 300) / image.naturalWidth);
-        this.setState({
-          image: {
-            width: image.naturalWidth * ratio,
-            height: image.naturalHeight * ratio,
-            source: image
-          }
-        });
-      };
+      this.setImage(reader.result);
     });
     reader.readAsDataURL(file[0]);
   };
@@ -157,6 +149,20 @@ class App extends React.Component {
   };
   handleFillClick = index => {
     this.setState({ fillPattern: index });
+  };
+  setImage = source => {
+    const image = new window.Image();
+    image.src = source;
+    image.onload = () => {
+      const ratio = Math.min((window.innerWidth - 300) / image.naturalWidth);
+      this.setState({
+        image: {
+          width: image.naturalWidth * ratio,
+          height: image.naturalHeight * ratio,
+          source: image
+        }
+      });
+    };
   };
   componentDidMount() {
     window.addEventListener("keydown", this.handleKeyDown);
@@ -259,6 +265,7 @@ class App extends React.Component {
         <div
           className="dropzone-container"
           style={{
+            display: image ? "block" : "flex",
             width: !image ? window.innerWidth : 300,
             position: "absolute",
             right: 0,
@@ -269,36 +276,48 @@ class App extends React.Component {
           }}
         >
           {!image ? (
-            <Dropzone onDrop={this.handleDrop}>
-              {({ getRootProps, getInputProps }) => (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: "40px",
-                    height: "100%",
-                    position: "absolute",
-                    boxSizing: "border-box",
-                    width: "100%"
-                  }}
-                  {...getRootProps()}
-                >
-                  <input {...getInputProps()} />
-                  <p
+            <>
+              <Dropzone onDrop={this.handleDrop}>
+                {({ getRootProps, getInputProps }) => (
+                  <div
                     style={{
-                      margin: "auto",
-                      padding: "20px",
-                      border: " 2px dashed #b1adad",
-                      borderRadius: "5px",
-                      textAlign: "center"
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "40px",
+                      height: "100%",
+                      boxSizing: "border-box",
+                      width: "50%"
                     }}
+                    {...getRootProps()}
                   >
-                    <img style={{ maxWidth: 80 }} src={uploadImage} />
-                  </p>
+                    <input {...getInputProps()} />
+                    <p
+                      style={{
+                        margin: "auto",
+                        padding: "20px",
+                        border: " 2px dashed #b1adad",
+                        borderRadius: "5px",
+                        textAlign: "center"
+                      }}
+                    >
+                      <img style={{ maxWidth: 80 }} src={uploadImage} />
+                    </p>
+                  </div>
+                )}
+              </Dropzone>
+              <div className="preview-container">
+                <div onClick={() => this.setImage(previews1)}>
+                  <img src={previews1} />
                 </div>
-              )}
-            </Dropzone>
+                <div onClick={() => this.setImage(previews2)}>
+                  <img src={previews2} />
+                </div>
+                <div onClick={() => this.setImage(previews3)}>
+                  <img src={previews3} />
+                </div>
+              </div>
+            </>
           ) : (
             <>
               {/* <div
