@@ -15,7 +15,7 @@ class Editor extends React.Component {
     this.stage = React.createRef();
   }
   handleClick = e => {
-    if (!this.state.shapeHovered) {
+    if (this.props.editMode && !this.state.shapeHovered) {
       let points = this.state.points;
       const shapes = this.state.shapes;
       let circles = this.state.circles;
@@ -103,20 +103,11 @@ class Editor extends React.Component {
   };
   componentDidMount() {
     window.addEventListener("keydown", this.handleKeyDown);
-    const img = new window.Image();
     const shingle = new window.Image();
     shingle.src =
       "https://images.homedepot-static.com/productImages/855df4ec-e09a-4391-b7b4-4ba82362808b/svn/gray-owens-corning-roof-shingles-hk20-64_1000.jpg";
 
-    img.src = "https://firstqualityroof.com/img/testimonials-image.jpg";
-    img.onload = e => {
-      const ratio = Math.min(window.innerWidth / 2 / img.naturalWidth);
-      this.setState({
-        imageWidth: img.naturalWidth * ratio,
-        imageHeight: img.naturalHeight * ratio
-      });
-    };
-    this.setState({ image: img, shingle });
+    this.setState({ shingle });
   }
   render() {
     return (
@@ -128,70 +119,84 @@ class Editor extends React.Component {
           })
         }
         onClick={this.handleClick}
-        className="App"
       >
         <Stage
           ref={this.stage}
           style={{
             position: "absolute",
+            cursor: !this.props.editMode
+              ? "auto"
+              : this.state.shapeHovered
+              ? "pointer"
+              : "crosshair",
             left: 0,
-            cursor: this.state.shapeHovered ? "pointer" : "crosshair"
+            top: 0
           }}
-          width={window.innerWidth / 2}
+          width={this.props.width}
           height={window.innerHeight}
         >
           <Layer
-            onMouseMove={this.handleMouseMove}
+            onMouseMove={this.props.editMode && this.handleMouseMove}
             x={this.state.x}
             y={this.state.y}
-            scale={this.state.hovered ? { x: 2, y: 2 } : { x: 1, y: 1 }}
+            scale={
+              this.props.editMode && this.state.hovered
+                ? { x: 2, y: 2 }
+                : { x: 1, y: 1 }
+            }
           >
-            <Image
-              height={this.state.imageHeight}
-              width={this.state.imageWidth}
-              style={{ pointerEvents: "none" }}
-              image={this.state.image}
-            />
-            <Line
-              closed={this.state.closed}
-              points={this.state.points.map(num => num)}
-              stroke="red"
-              fill="black"
-            />
-            {this.state.shapes.map((shape, index) => {
-              return (
-                <>
-                  <Line
-                    onClick={() => this.handleShapeClick(index)}
-                    onMouseEnter={() => this.handleShapeHover(index)}
-                    onMouseLeave={() => this.handleShapeHover(index)}
-                    fillPatternImage={this.state.shingle}
-                    fillPatternRepeat="repeat"
-                    fillPatternScale={{ x: 0.05, y: 0.02 }}
-                    fill={
-                      index === this.state.shapeSelected
-                        ? "green"
-                        : shape.hovered
-                        ? "#00800069"
-                        : null
-                    }
-                    closed={true}
-                    points={shape.points.map(num => num)}
-                  />
-                </>
-              );
-            })}
-            {this.state.circles.map(circle => {
-              return (
-                <Circle
-                  draggable
-                  x={circle.x}
-                  y={circle.y}
-                  radius={2}
+            {this.props.image && (
+              <Image
+                height={this.props.image.height}
+                width={this.props.image.width}
+                style={{ pointerEvents: "none" }}
+                image={this.props.image.source}
+              />
+            )}
+            {this.props.editMode && (
+              <>
+                <Line
+                  closed={this.state.closed}
+                  points={this.state.points.map(num => num)}
+                  stroke="red"
                   fill="black"
                 />
-              );
-            })}
+                {this.state.shapes.map((shape, index) => {
+                  return (
+                    <>
+                      <Line
+                        onClick={() => this.handleShapeClick(index)}
+                        onMouseEnter={() => this.handleShapeHover(index)}
+                        onMouseLeave={() => this.handleShapeHover(index)}
+                        fillPatternImage={this.state.shingle}
+                        fillPatternRepeat="repeat"
+                        fillPatternScale={{ x: 0.05, y: 0.02 }}
+                        fill={
+                          index === this.state.shapeSelected
+                            ? "green"
+                            : shape.hovered
+                            ? "#00800069"
+                            : null
+                        }
+                        closed={true}
+                        points={shape.points.map(num => num)}
+                      />
+                    </>
+                  );
+                })}
+                {this.state.circles.map(circle => {
+                  return (
+                    <Circle
+                      draggable
+                      x={circle.x}
+                      y={circle.y}
+                      radius={2}
+                      fill="black"
+                    />
+                  );
+                })}
+              </>
+            )}
           </Layer>
         </Stage>
       </div>
