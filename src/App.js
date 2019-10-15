@@ -4,7 +4,10 @@ import uploadImage from "./upload.svg";
 import editImage from "./edit.svg";
 import addImage from "./add.svg";
 import layersImage from "./layers.svg";
+import roofImage from "./roof.svg";
 import { Stage, Layer, Line, Image, Circle } from "react-konva";
+import shingles1 from "./fills/shingles1.jpg";
+import shingles2 from "./fills/shingles2.jpg";
 import "./index.css";
 
 class App extends React.Component {
@@ -19,7 +22,14 @@ class App extends React.Component {
       circles: [],
       shapeHovered: false,
       shapeSelected: null,
-      showLayers: false
+      showLayers: false,
+      fills: [shingles1, shingles2].map(fill => {
+        const image = new window.Image();
+        image.src = fill;
+        return image;
+      }),
+      fillPattern: 0,
+      showFills: false
     };
     this.stage = React.createRef();
   }
@@ -145,16 +155,23 @@ class App extends React.Component {
     });
     return newNums;
   };
+  handleFillClick = index => {
+    this.setState({ fillPattern: index });
+  };
   componentDidMount() {
     window.addEventListener("keydown", this.handleKeyDown);
-    const shingle = new window.Image();
-    shingle.src =
-      "https://images.homedepot-static.com/productImages/855df4ec-e09a-4391-b7b4-4ba82362808b/svn/gray-owens-corning-roof-shingles-hk20-64_1000.jpg";
-
-    this.setState({ shingle });
   }
   render() {
-    const { image, editMode, points, shapes, showLayers } = this.state;
+    const {
+      image,
+      editMode,
+      points,
+      shapes,
+      showLayers,
+      showFills,
+      fills,
+      fillPattern
+    } = this.state;
     const width = window.innerWidth - 300;
     return (
       <div>
@@ -214,7 +231,7 @@ class App extends React.Component {
                       onClick={() => this.handleShapeClick(index)}
                       onMouseEnter={() => this.handleShapeHover(index)}
                       onMouseLeave={() => this.handleShapeHover(index)}
-                      fillPatternImage={this.state.shingle}
+                      fillPatternImage={fills[fillPattern]}
                       fillPatternRepeat="repeat"
                       fillPatternScale={{ x: 0.05, y: 0.02 }}
                       fill={
@@ -416,6 +433,53 @@ class App extends React.Component {
                       );
                     })
                   )}
+                </div>
+              )}
+              <div
+                onClick={() => this.setState({ showFills: !showFills })}
+                style={{
+                  padding: 20,
+                  textAlign: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: "18px",
+                  fontWeight: "300",
+                  color: "#2d2d2d",
+                  borderBottom: "1px solid #cecece"
+                }}
+              >
+                <img
+                  style={{ maxWidth: 40, marginRight: 20 }}
+                  src={roofImage}
+                />
+                <span>Roof Options</span>
+              </div>
+              {showFills && (
+                <div style={{ padding: 20, position: "relative" }}>
+                  {fills.map((fill, index) => {
+                    return (
+                      <div
+                        onClick={() => this.handleFillClick(index)}
+                        style={{ marginBottom: 20 }}
+                        width={240}
+                        height={240}
+                      >
+                        <img
+                          style={{
+                            border:
+                              index === fillPattern
+                                ? "5px solid green"
+                                : "none",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            boxSizing: "border-box"
+                          }}
+                          src={fill.src}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </>
